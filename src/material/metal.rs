@@ -1,4 +1,5 @@
-use super::*;
+use super::Material;
+use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::random::random_in_unit_sphere;
 use crate::ray::Ray;
@@ -36,6 +37,6 @@ impl Material for Metal {
     }
 }
 
-pub(crate) fn reflect(v: &Vector3, n: &Vector3) -> Vector3 {
+pub(super) fn reflect(v: &Vector3, n: &Vector3) -> Vector3 {
     v - 2.0 * v.dot(n) * n
 }

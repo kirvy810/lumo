@@ -1,6 +1,6 @@
 use lumo::camera::CameraBuilder;
 use lumo::color::Color;
-use lumo::hittable::World;
+use lumo::hittable::Environment;
 use lumo::hittable::list::HittableList;
 use lumo::hittable::sphere::Sphere;
 use lumo::material::{Dielectric, Diffuse, Material, Metal};
@@ -10,7 +10,7 @@ use lumo::vector3::Vector3;
 use rand::Rng;
 use std::sync::Arc;
 
-fn random_balls() -> World<fn(&Ray) -> Color> {
+fn random_balls() -> Environment<HittableList, fn(&Ray) -> Color> {
     let glass = Arc::new(Dielectric::new(1.5));
 
     let mut balls = HittableList::from_vec(vec![
@@ -58,7 +58,7 @@ fn random_balls() -> World<fn(&Ray) -> Color> {
         }
     }
 
-    World::new(balls, |r| {
+    Environment::new(balls, |r| {
         let t = 0.5 * (r.direction.normalized().y + 1.0);
         Color::WHITE.lerp(&Color::new(0.5, 0.7, 1.0), t)
     })

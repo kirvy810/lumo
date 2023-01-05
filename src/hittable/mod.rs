@@ -36,8 +36,8 @@ pub trait Hittable: Send + Sync {
 
 pub mod list;
 pub mod sphere;
-pub mod world;
+pub mod environment;
 
 pub use list::*;
 pub use sphere::*;
-pub use world::*;
+pub use environment::*;

@@ -1,20 +1,20 @@
-use super::list::HittableList;
 use super::{HitRecord, Hittable};
 use crate::color::Color;
 use crate::ray::Ray;
 use std::ops::Range;
 
-pub struct World<B: Fn(&Ray) -> Color + Send + Sync> {
-    pub list: HittableList,
+pub struct Environment<H: Hittable, B: Fn(&Ray) -> Color + Send + Sync> {
+    world: H,
     bg: B,
 }
 
-impl<B> World<B>
+impl<H, B> Environment<H, B>
 where
+    H: Hittable,
     B: Fn(&Ray) -> Color + Send + Sync,
 {
-    pub fn new(list: HittableList, bg: B) -> Self {
-        Self { list, bg }
+    pub fn new(world: H, bg: B) -> Self {
+        Self { world, bg }
     }
 
     pub fn background(&self, r: &Ray) -> Color {
@@ -22,11 +22,12 @@ where
     }
 }
 
-impl<B> Hittable for World<B>
+impl<H, B> Hittable for Environment<H, B>
 where
+    H: Hittable,
     B: Fn(&Ray) -> Color + Send + Sync,
 {
     fn hit(&self, r: &Ray, t_range: Range<f64>) -> Option<HitRecord> {
-        self.list.hit(r, t_range)
+        self.world.hit(r, t_range)
     }
 }

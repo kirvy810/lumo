@@ -1,6 +1,6 @@
 use crate::camera::Camera;
 use crate::color::Color;
-use crate::hittable::{Hittable, World};
+use crate::hittable::{Hittable, Environment};
 use crate::ray::Ray;
 use image::{Rgb, RgbImage};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -62,8 +62,9 @@ impl Renderer {
         }
     }
 
-    pub fn render<B>(&self, world: World<B>) -> Vec<Color>
+    pub fn render<H, B>(&self, env: Environment<H, B>) -> Vec<Color>
     where
+        H: Hittable,
         B: Fn(&Ray) -> Color + Send + Sync,
     {
         let image_size = self.image_height * self.image_width;
@@ -82,7 +83,7 @@ impl Renderer {
                     .map(|_| {
                         let (u, v) = self.uv(i, self.image_height - j);
                         let r = self.camera.ray(u, v);
-                        Self::ray_color(r, &world, self.depth)
+                        Self::ray_color(r, &env, self.depth)
                     })
                     .fold(Color::BLACK, |x, y| x + y);
 
@@ -104,23 +105,24 @@ impl Renderer {
         (u, v)
     }
 
-    fn ray_color<B>(r: Ray, world: &World<B>, depth: u32) -> Color
+    fn ray_color<H, B>(r: Ray, env: &Environment<H, B>, depth: u32) -> Color
     where
+        H: Hittable,
         B: Fn(&Ray) -> Color + Send + Sync,
     {
         if depth == 0 {
             return Color::BLACK;
         }
 
-        if let Some(hit) = world.hit(&r, 1e-6..f64::INFINITY) {
+        if let Some(hit) = env.hit(&r, 1e-6..f64::INFINITY) {
             let material = hit.material.clone();
             return material
                 .scatter(&r, hit)
                 .map_or(Color::BLACK, |(color, scattered)| {
-                    color * Self::ray_color(scattered, world, depth - 1)
+                    color * Self::ray_color(scattered, env, depth - 1)
                 });
         }
 
-        world.background(&r)
+        env.background(&r)
     }
 }
